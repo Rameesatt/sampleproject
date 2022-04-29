@@ -1,0 +1,157 @@
+qp.dart:
+
+
+class Qp{
+  String qp;
+  bool qpAnswer;
+  Qp(this.qp,this.qpAnswer);
+}
+
+
+qplists.dart
+
+import 'qp.dart';
+class Quiz{
+  int _qpNum=0;
+
+
+List<Qp>_questionsList=[
+    Qp('You can lead a cow down stairs but not up stairs.', false),
+    Qp('Approximately one quarter of human bones are in the feet.', true),
+    Qp('A slug\'s blood is green.', true),
+    Qp('Buzz Aldrin\'s mother\'s maiden name was \"Moon\".', true),
+    Qp('It is illegal to pee in the Ocean in Portugal.', true),
+    Qp(
+        'No piece of square dry paper can be folded in half more than 7 times.',
+        false),
+        ];
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  void nxtqp(){
+    if(_qpNum <_questionsList.length-1){
+      _qpNum++;
+    }
+  }
+
+
+   String getqp() {
+    return _questionsList[_qpNum].qp;
+  }
+
+  bool getQpAnswer() {
+    return _questionsList[_qpNum].qpAnswer;
+  }
+
+  bool isFinished() {
+    if (_qpNum >= _questionsList.length - 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+ reset(){
+    _qpNum = 0;
+  }
+
+  int getqplistlength() {
+    return _questionsList.length;
+  }
+}
+
+
+
+
+main.dart:
+
+void main() => runApp(MainPage());
+
+class MainPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10.0),
+            child: QPage(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class QPage extends StatefulWidget {
+  @override
+  _QPageState createState() => _QPageState();
+}
+
+class _QPageState extends State <QPage> {
+  List<Icon> marks = [];
+
+  void correctAnswer(bool userData) {
+    setState(() {
+      if (quiz.isFinished()) {
+        Alert(
+                context: context,
+                title: "Finished!",
+                desc: "quiz ended.")
+            .show();
+        quiz.reset();
+        marks.clear();
+      } else {
+        if (quiz.getQpAnswer() == userData) {
+          marks.add(Icon(
+            Icons.check,
+            color: Colors.green,
+          ));
+        } else {
+          marks.add(
+            Icon(
+              Icons.close,
+              color: Colors.red,
+            ),
+          );
+        }
+        quiz.nxtqp();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Center(
+              child: Text(
+                
+                quiz.getqp(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 25.0,
+                ),
+              ),
+            ),
+          ),
+        ),
