@@ -1,0 +1,414 @@
+main.dart:
+
+import 'package:flutter/material.dart';
+import 'package:flutter_weatherapp/pages/loading_page.dart';
+ 
+ 
+ void main()=>runApp(const MyApp());
+ 
+   class MyApp extends StatelessWidget {
+   const MyApp({ Key? key }) : super(key: key);
+ 
+   @override
+   Widget build(BuildContext context) {
+     return MaterialApp(
+
+       theme: ThemeData.dark(),
+       home: const LoadingPage(),
+       
+     );
+   }
+ }
+  
+  
+city.dart:
+
+import 'package:flutter/material.dart';
+import 'package:flutter_weatherapp/utilities/constants.dart'; 
+
+class City extends StatefulWidget {
+  const City({Key? key}) : super(key: key);
+
+ 
+ 
+  @override
+  _CityState createState() => _CityState();
+}
+
+
+
+class _CityState extends State<City> {
+  late String cityName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+   
+  body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/nature.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        constraints: const BoxConstraints.expand(),
+        child: SafeArea(
+          child: Column(
+            children: <Widget>[
+              Align(
+                alignment: Alignment.topLeft,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.redAccent,
+                    size: 50.0,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(20.0),
+                child: TextField(
+                  style: const TextStyle(
+                    color: Colors.black,
+                  ),
+                  decoration: kTextFieldInputDecoration,
+                  onChanged: (value) {
+                    cityName = value;
+                  },
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, cityName);
+                },
+                child: const Text(
+                  'Get Weather',
+                  style: kButtonTextStyle,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+locationpage.dart:
+import 'package:flutter/material.dart';
+import 'package:flutter_weatherapp/utilities/constants.dart';
+import 'package:flutter_weatherapp/services/weather.dart';
+import 'package:flutter_weatherapp/pages/city_page.dart';
+
+
+class LocationPage extends StatefulWidget {
+  const LocationPage({Key? key, this.locationWeather}) : super(key: key);
+  final locationWeather;
+
+  @override
+  _LocationScreenState createState() => _LocationScreenState();
+}
+
+class _LocationScreenState extends State<LocationPage> {
+  WeatherModel weather = WeatherModel();
+  late int temperature;
+  late String weatherIcon;
+  late String cityName;
+  late String weatherMessage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    updateUI(widget.locationWeather);
+  }
+
+  void updateUI(dynamic weatherData) {
+    setState(() {
+      if (weatherData == null) {
+        temperature = 0;
+        weatherIcon = 'Error';
+        weatherMessage = 'Unable to get weather data';
+        cityName = '';
+        return;
+      }
+      double temp = weatherData['main']['temp'];
+      temperature = temp.toInt();
+      var condition = weatherData['weather'][0]['id'];
+      weatherIcon = weather.getWeatherIcon(condition);
+      weatherMessage = weather.getMessage(temperature);
+      cityName = weatherData['name'];
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: const AssetImage('assets/images/location_background.jpg'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+                Colors.white.withOpacity(0.8), BlendMode.dstATop),
+          ),
+        ),
+        constraints: const BoxConstraints.expand(),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  TextButton(
+                    onPressed: () async {
+                      var weatherData = await weather.getLocationWeather();
+                      updateUI(weatherData);
+                    },
+                    child: Icon(
+                      Icons.near_me,
+                      color: Colors.grey[800],
+                      size: 50.0,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      var typedName = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const City();
+                          },
+                        ),
+                      );
+                      if (typedName != null) {
+                        var weatherData =
+                        await weather.getCityWeather(typedName);
+                        updateUI(weatherData);
+                      }
+                    },
+                    child: Icon(
+                      Icons.location_city,
+                      color: Colors.grey[800],
+                      size: 50.0,
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 15.0),
+                child: Row(
+                  children: <Widget>[
+                    Text(
+                      '$temperature°',
+                      style: kTempTextStyle,
+                    ),
+                    Text(
+                      weatherIcon,
+                      style: kConditionTextStyle,
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 15.0),
+                child: Text(
+                  '$weatherMessage in $cityName',
+                  textAlign: TextAlign.right,
+                  style: kMessageTextStyle,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+location.dart:
+
+import 'package:geolocator/geolocator.dart';
+class Location {
+   late double latitude;
+   late double longitude;
+
+  Future<void> getCurrentLocation() async {
+    try {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      // Test if location services are enabled.
+        
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        // Location services are not enabled don't continue
+        // accessing the position and request users of the
+        // App to enable the location services.
+        await Geolocator.openLocationSettings();
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          // Permissions are denied, next time you could try
+          // requesting permissions again (this is also where
+          // Android's shouldShowRequestPermissionRationale
+          // returned true. According to Android guidelines
+          // your App should show an explanatory UI now.
+          return Future.error('Location services are denied.');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        // Permissions are denied forever, handle appropriately.
+        return Future.error(
+            'Location permissions are permanently denied, we cannot request permissions.');
+      }
+
+      // When we reach here, permissions are granted and we can
+      // continue accessing the position of the device.
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      latitude = position.latitude;
+      longitude = position.longitude;
+    } catch (e) {
+      // ignore: avoid_print
+      print(e);
+    }
+  }}
+  
+weather.dart:
+
+const apiKey = 'dc19e55fb2bb283133d48e94b627d1d7';
+const openWeatherMapURL = 'https://api.openweathermap.org/data/2.5/weather';
+
+class WeatherModel {
+  Future<dynamic> getCityWeather(String cityName) async {
+    Networking networkHelper = Networking(
+        '$openWeatherMapURL?q=$cityName&appid=$apiKey&units=metric');
+
+    var weatherData = await networkHelper.getData();
+    return weatherData;
+  }
+
+  Future<dynamic> getLocationWeather() async {
+    Location location = Location();
+    await location.getCurrentLocation();
+
+    Networking networkHelper = Networking(
+        '$openWeatherMapURL?lat=${location.latitude}&lon=${location.longitude}&appid=$apiKey&units=metric');
+
+    var weatherData = await networkHelper.getData();
+    return weatherData;
+  }
+
+  String getWeatherIcon(int condition) {
+    if (condition < 300) {
+      return '🌩';
+    } else if (condition < 400) {
+      return '🌧';
+    } else if (condition < 600) {
+      return '☔️';
+    } else if (condition < 700) {
+      return '☃️';
+    } else if (condition < 800) {
+      return '🌞';
+    } else if (condition == 800) {
+      return '☀️';
+    } else if (condition <= 804) {
+      return '🌤️';
+    } else {
+      return '🤷‍';
+    }
+  }
+
+  String getMessage(int temp) {
+    if (temp > 25) {
+      return 'It\'s 🍦 time';
+    } else if (temp > 20) {
+      return 'Time for shorts and 👕';
+    } else if (temp < 10) {
+      return 'You\'ll need 🧣 and 🧤';
+    } else {
+      return 'Bring a 🧥 just in case';
+    }
+  }
+}
+  
+constants.dart:
+
+import 'package:flutter/material.dart';
+
+const kTempTextStyle = TextStyle(
+  fontFamily: 'Spartan MB',
+  fontSize: 100.0,
+);
+
+const kMessageTextStyle = TextStyle(
+  fontFamily: 'Spartan MB',
+  fontSize: 60.0,
+);
+
+const kButtonTextStyle = TextStyle(
+  fontSize: 30.0,
+  fontFamily: 'Spartan MB',
+  color: Colors.redAccent
+);
+
+const kConditionTextStyle = TextStyle(
+  fontSize: 100.0,
+);
+
+const kTextFieldInputDecoration = InputDecoration(
+  filled: true,
+  fillColor: Colors.white,
+  icon: Icon(
+    Icons.location_city,
+    color: Colors.white,
+  ),
+  hintText: 'Enter City Name',
+  hintStyle: TextStyle(
+    color: Colors.grey,
+  ),
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.all(
+      Radius.circular(10.0),
+    ),
+    borderSide: BorderSide.none,
+  ),
+);
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class Networking{
+  Networking(this.url);
+  final String url;
+
+  Future getData() async{
+    http.Response response = await http.get(Uri.parse(url));
+
+    if(response.statusCode == 200) {
+      String data = response.body;
+
+      return jsonDecode(data);
+    } else{
+      // ignore: avoid_print
+      print(response.statusCode);
+    }
+  }
+
+}
+
+
+
+  
+  
