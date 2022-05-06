@@ -1,0 +1,243 @@
+main.dart:
+
+import 'package:flutter/material.dart';
+
+import 'package:flutter_application_navigation/screen1.dart';
+
+main(){
+  runApp(const MyApp());
+}
+  
+  class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+   
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primaryColor: Colors.black,
+      ),
+      home: const ScreenOne(),
+    );
+  }}
+  
+  screenone.dart:
+  
+  import 'package:flutter/material.dart';
+import 'package:flutter_application_navigation/screen2.dart';
+
+
+class ScreenOne extends StatelessWidget {
+    const ScreenOne({ Key? key }) : super(key: key);
+    
+  
+    @override
+    Widget build(BuildContext context) {
+      String msg='get started';
+      return Scaffold(
+        backgroundColor: Colors.orangeAccent,
+        //appBar: AppBar(
+          
+        //),
+        body:Container(
+          alignment:Alignment.bottomCenter,
+        padding: EdgeInsets.all(32),
+        child: ElevatedButton(
+         style: ElevatedButton.styleFrom(
+           textStyle: TextStyle(fontSize: 24),
+           
+          minimumSize: Size.fromHeight(72),
+           shape:StadiumBorder(),
+           primary: Colors.white,
+           
+            
+          ),
+          child:Text(
+            msg,
+             style:TextStyle(
+            color: Colors.orangeAccent,
+            fontSize:24,
+            
+          ),
+         
+          ),
+          
+          
+          onPressed: () {
+           Navigator.of(context).push(MaterialPageRoute(builder: (context){
+             return ScreenTwo();
+          }));
+          },
+        ),
+        
+      
+        )
+      );
+    }}
+
+screen2.dart:
+
+import 'package:flutter/material.dart';
+
+
+
+class ScreenTwo extends StatelessWidget {
+     ScreenTwo({ Key? key }) : super(key: key);
+        List<String> foods = ["Veggie Tomato Mix", "Spicy Maggie Masala", "Chicken Pops", "lollipops", "pizza", "Chicken Biriyani"]; 
+   
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        bottomNavigationBar: Row(
+          children: <Widget>[
+            Container(
+              height: 60,
+              width: MediaQuery.of(context).size.width/4,
+              decoration: BoxDecoration(
+                color: Colors.orangeAccent
+              ),
+              child: Icon(Icons.home),
+            ),
+            Container(
+            height: 60,
+              width: MediaQuery.of(context).size.width/4,
+              decoration: BoxDecoration(
+                color: Colors.orangeAccent
+              ),
+              child: Icon(Icons.heart_broken_rounded),
+            ),
+
+            Container(
+            height: 60,
+              width: MediaQuery.of(context).size.width/4,
+              decoration: BoxDecoration(
+                color: Colors.orangeAccent
+              ),
+              child: Icon(Icons.person),
+            ),
+              Container(
+            height: 60,
+              width: MediaQuery.of(context).size.width/4,
+              decoration: BoxDecoration(
+                color: Colors.orangeAccent
+              ),
+              child: Icon(Icons.add_alarm),
+            ),
+          ],
+        ),
+       appBar: AppBar(
+          backgroundColor: Colors.orangeAccent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () {},
+          ),
+
+
+     title: RichText(
+       text: TextSpan(
+         style: Theme.of(context)
+         .textTheme
+         .titleLarge
+         ?.copyWith(fontWeight: FontWeight.bold),
+         children: [
+           TextSpan(text:'Foods Mania',style: TextStyle(color: Colors.black)
+           ),
+           TextSpan(text:'BlockBuster',style: TextStyle(color: Colors.black)
+           ),
+         ]
+        
+       )),
+
+      actions:<Widget>[
+        IconButton(
+          icon:Icon(Icons.add_shopping_cart),
+          onPressed: () {},
+          )]
+
+        ),
+        
+        body: 
+        Padding(  
+            padding: EdgeInsets.all(15),  
+            child: Column(  
+              children: <Widget>[  
+                Container(  
+                  padding: EdgeInsets.all(15),  
+                  child: TextField(  
+                    decoration: InputDecoration(  
+                      border: OutlineInputBorder(),  
+                        prefixIcon: Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {},
+                ),
+                      hintText: 'Search Here', 
+                          
+                    ),  
+                 
+                  ),  
+                  ),  
+                
+
+                Container(
+              
+              child: Text("Delicious Foods For You",style: TextStyle(color:Colors.black,fontSize:25,fontStyle: FontStyle.italic,fontWeight: FontWeight.bold),),
+            ),
+                    
+                 Container(
+                   margin: const EdgeInsets.all(15),
+                    width: 200,
+                    height: 100,
+                   alignment: Alignment.center,
+                   child:ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: foods.map((foods){
+                               return box(foods, Colors.amber);
+                          }).toList(),
+                        )
+                      ),
+
+                      Container(
+                        height: 100,
+                        child:SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child:Row(
+                            
+                                children: foods.map((foods){
+                                return box(foods, Colors.amber);
+                            }).toList(),
+                          )
+                        )
+                      )
+   
+                  ],
+                ) 
+            )   
+          
+    );
+  } 
+
+  Widget box(String title, Color backgroundcolor){
+     return Container(
+        margin: EdgeInsets.all(10),
+        width: 80,
+        color: backgroundcolor,
+        alignment: Alignment.center,
+        child: Text(title, style:TextStyle(
+                     color: Colors.black,
+                     fontSize: 15))
+     );
+
+                 
+                        
+         // body: 
+          //SafeArea(
+         //child: Text(
+        // 'Delicious Foods',
+          //style:TextStyle(
+           // color: Colors.black,
+            //fontSize:15,
+  }}
+
